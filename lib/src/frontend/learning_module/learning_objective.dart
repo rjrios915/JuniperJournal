@@ -4,6 +4,7 @@ import '../../styling/app_colors.dart';
 import 'create_lm_template.dart';
 import '../../backend/db/repositories/learning_module_repo.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
 
 /// Purpose: To clearly define what students will know or be able to do by the end of the lesson.  
 /// These objectives guide instructional focus and support the generation of aligned performance expectations.
@@ -288,8 +289,9 @@ class _LearningObjectiveScreenState extends State<LearningObjectiveScreen> {
 
   String _buildInquiryText() {
     final moduleData = _freshModuleData ?? widget.module;
-    final inquiry = moduleData['inquiry'] as List?;
-    if (inquiry != null && inquiry.isNotEmpty) {
+    // final inquiry = moduleData['inquiry'] as List?;
+    final inquiry = moduleData['inquiry'];
+    if (inquiry is List && inquiry.isNotEmpty) {
       return inquiry.join('\n\n');
     }
     return 'No inquiry data available';

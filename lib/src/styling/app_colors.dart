@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+  // Landing Page Gradient
+  static const Color gradientStart = Color(0xFF8BD674);
+  static const Color gradientEnd = Color(0xFF0B7D4E);
+  static const Color authButton = Color(0xFF6BB578);
+
   static const Color primary = Color(0xFF5DB075); // Green (darker)
   static const Color background = Color(0xFFFFFFFF); // White
   static const Color textPrimary = Color(0xFF212121); // Dark grey
-  static const Color textSecondary = Color(0xFF757575); // Light grey
+  static const Color textSecondary = Color(0xFF212121); // Light grey
   static const Color border = Color(0xFF4CAF50); // Green border
   static const Color success = Color(0xFF4CAF50); // Green for success states
-  static const Color accent = Color(0xFF81C784); // Light green accent
+  static const Color accent = Color(0xFFc9f2cb); // Light green accent
 
   // Button colors
   static const Color buttonPrimary = Color(0xFF4CAF50); // Green

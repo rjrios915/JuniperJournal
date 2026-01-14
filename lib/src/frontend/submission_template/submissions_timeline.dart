@@ -248,7 +248,7 @@ class _InteractiveTimelinePageState extends State<InteractiveTimelinePage> {
                 });
               },
               headerStyle: const HeaderStyle(
-                formatButtonVisible: false,
+                   formatButtonVisible: false,
                 titleCentered: true,
                 titleTextStyle: TextStyle(
                   fontSize: 16,
@@ -261,12 +261,15 @@ class _InteractiveTimelinePageState extends State<InteractiveTimelinePage> {
                   color: AppColors.accent,
                   shape: BoxShape.circle,
                 ),
+                todayTextStyle: TextStyle(
+                  color: Colors.black,
+                ),
                 selectedDecoration: BoxDecoration(
                   color: AppColors.primary,
                   shape: BoxShape.circle,
                 ),
                 defaultTextStyle: TextStyle(color: AppColors.textPrimary),
-                weekendTextStyle: TextStyle(color: AppColors.textSecondary),
+                weekendTextStyle: TextStyle(color: AppColors.textPrimary),
               ),
             ),
 

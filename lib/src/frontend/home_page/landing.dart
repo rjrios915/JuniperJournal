@@ -10,14 +10,15 @@ class JuniperAuthScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+
         // Green background gradient like the mockup
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF8BD674), // light green
-              Color(0xFF0B7D4E), // darker green
+              AppColors.gradientStart,
+              AppColors.gradientEnd
             ],
           ),
         ),
@@ -38,7 +39,7 @@ class JuniperAuthScreen extends StatelessWidget {
               ),
 
               const Spacer(),
-
+              
               // Buttons
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32.0),
@@ -47,18 +48,14 @@ class JuniperAuthScreen extends StatelessWidget {
                     _AuthButton(
                       label: 'Sign up',
                       onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (context) => SignupScreen())
-                        );
+                        Navigator.pushNamed(context, '/signup');
                       },
                     ),
                     const SizedBox(height: 16),
                     _AuthButton(
                       label: 'Log in',
                       onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (context) => LoginScreen())
-                        );
+                        Navigator.pushNamed(context, '/login');
                       },
                     ),
                   ],

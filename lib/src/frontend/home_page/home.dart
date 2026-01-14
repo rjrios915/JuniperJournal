@@ -12,7 +12,7 @@ class HomeShellScreen extends StatefulWidget {
 class _HomeShellScreenState extends State<HomeShellScreen> {
   int _selectedIndex = 0;
 
-  /// Shows bottom sheet with create options
+  // Shows bottom sheet with create options
   void _showCreateOptions() {
     showModalBottomSheet(
       context: context,
@@ -50,7 +50,7 @@ class _HomeShellScreenState extends State<HomeShellScreen> {
               const SizedBox(height: 12),
               _CreateOption(
                 icon: Icons.assignment_outlined,
-                title: 'Submission Template',
+                title: 'Project Template',
                 subtitle: 'Create a new project submission',
                 onTap: () {
                   Navigator.pop(context);

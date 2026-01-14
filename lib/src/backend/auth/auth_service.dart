@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../db/supabase_database.dart';
+import 'package:flutter/material.dart';
 
 /// Service class that handles all authentication operations using Supabase Auth.
 ///
@@ -13,7 +14,6 @@ import '../db/supabase_database.dart';
 /// handled by the UI layer.
 class AuthService {
   AuthService._();
-
   static final AuthService instance = AuthService._();
 
   SupabaseClient get _client => SupabaseDatabase.instance.client;
@@ -21,14 +21,29 @@ class AuthService {
   /// Returns the currently logged-in user, or null if not authenticated
   User? get currentUser => _client.auth.currentUser;
 
+  /// Listen to auth state changes
+  ///
+  /// Returns a stream that emits whenever the auth state changes
+  /// (login, logout, token refresh, etc.)
+  Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
+
+  /// Get the current user's session
+  ///
+  /// Returns null if no active session
+  Session? get currentSession => _client.auth.currentSession;
+
+
   /// Returns true if a user is currently logged in
   bool get isLoggedIn => currentUser != null;
 
+  void logCurrentUser() {
+    debugPrint('Current user: ${currentUser?.email} (${currentUser?.id})');
+  }
   /// Sign up a new user with email and password
   ///
   /// Throws an exception if signup fails
   /// Returns the user object on success
-  Future<User?> signUpWithEmail({
+  Future<SignUpResult> signUpWithEmail({
     required String email,
     required String password,
     String? username,
@@ -38,8 +53,11 @@ class AuthService {
       password: password,
       data: username != null ? {'username': username} : null,
     );
-
-    return response.user;
+    return SignUpResult(
+      user: response.user,
+      session: response.session,
+      requiresEmailConfirmation: response.session == null,
+    );
   }
 
   /// Sign in an existing user with email and password
@@ -97,17 +115,6 @@ class AuthService {
     return response.user;
   }
 
-  /// Listen to auth state changes
-  ///
-  /// Returns a stream that emits whenever the auth state changes
-  /// (login, logout, token refresh, etc.)
-  Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
-
-  /// Get the current user's session
-  ///
-  /// Returns null if no active session
-  Session? get currentSession => _client.auth.currentSession;
-
   /// Refresh the current session
   ///
   /// Useful for keeping the user logged in
@@ -115,4 +122,29 @@ class AuthService {
     final response = await _client.auth.refreshSession();
     return response.session;
   }
+}
+
+/// Result object returned from signup
+class SignUpResult {
+  final User? user;
+  final Session? session;
+  final bool requiresEmailConfirmation;
+
+  /// If non-null, signup failed and this is the user-friendly error
+  final String? friendlyErrorMessage;
+
+  /// Optional raw values for debugging/logging
+  final String? rawErrorCode;
+  final int? rawStatusCode;
+
+  const SignUpResult({
+    required this.user,
+    required this.session,
+    required this.requiresEmailConfirmation,
+    this.friendlyErrorMessage,
+    this.rawErrorCode,
+    this.rawStatusCode,
+  });
+
+  bool get isSuccess => friendlyErrorMessage == null;
 }

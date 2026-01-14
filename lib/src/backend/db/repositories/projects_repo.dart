@@ -10,6 +10,10 @@ class ProjectsRepo {
     required String problemStatement,
     required List<String> tags,
   }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) {
+      throw Exception('Not signed in');
+    }
     try {
       final row = await _client
           .from('projects')
@@ -17,6 +21,7 @@ class ProjectsRepo {
             'project_name': projectName,
             'problem_statement': problemStatement,
             'tags': tags.isEmpty ? null : tags, // avoid [] issues
+            'user_id': user.id
           })
           .select()
           .single();
