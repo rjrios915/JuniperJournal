@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:juniper_journal/src/features/project/project.dart';
+import 'package:juniper_journal/src/features/learning_module/learning_module.dart';
 import 'package:juniper_journal/src/backend/db/supabase_database.dart';
-import 'package:juniper_journal/src/frontend/home_page/landing.dart';
-import 'package:juniper_journal/src/frontend/home_page/login.dart';
-import 'package:juniper_journal/src/frontend/home_page/signup.dart';
+import 'package:juniper_journal/src/features/home_page/home_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

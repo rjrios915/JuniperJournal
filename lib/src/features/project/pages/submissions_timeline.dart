@@ -1,0 +1,362 @@
+import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/intl.dart';
+import 'package:juniper_journal/src/features/project/project.dart';
+import 'package:juniper_journal/src/shared/styling/theme.dart';
+import 'package:juniper_journal/src/shared/widgets/widgets.dart';
+import '../../../backend/db/repositories/projects_repo.dart';
+
+class InteractiveTimelinePage extends StatefulWidget {
+  final String projectId;
+  final String projectName;
+  final List<String> tags;
+
+  const InteractiveTimelinePage({
+    super.key,
+    required this.projectId,
+    required this.projectName,
+    required this.tags,
+  });
+
+  @override
+  State<InteractiveTimelinePage> createState() => _InteractiveTimelinePageState();
+}
+
+class _InteractiveTimelinePageState extends State<InteractiveTimelinePage> {
+  DateTime _focusedDay = DateTime.now();
+  DateTime? _selectedDay;
+  final List<Map<String, String>> _timeline = [];
+  final _projectsRepo = ProjectsRepo();
+
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTimeline();
+  }
+
+  Future<void> _loadTimeline() async {
+    final timeline = await _projectsRepo.getTimeline(widget.projectId);
+    if (timeline != null && mounted) {
+      setState(() {
+        _timeline.clear();
+        _timeline.addAll(timeline);
+      });
+    }
+  }
+
+  Future<void> _saveTimeline() async {
+    await _projectsRepo.updateTimeline(
+      id: widget.projectId,
+      timeline: _timeline,
+    );
+  }
+
+  void _addEventDialog() {
+    final eventController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final locationController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add to Timeline'),
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildTextField('Event (required)', eventController),
+              const SizedBox(height: 12),
+              _buildTextField('Description (optional)', descriptionController),
+              const SizedBox(height: 12),
+              _buildTextField('Location', locationController),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.buttonPrimary,
+              foregroundColor: AppColors.buttonText,
+            ),
+            onPressed: () async {
+              if (eventController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Event name is required')),
+                );
+                return;
+              }
+              setState(() {
+                _timeline.add({
+                  'date': DateFormat('MMM d, yyyy').format(_selectedDay ?? _focusedDay),
+                  'event': eventController.text,
+                  'description': descriptionController.text,
+                  'location': locationController.text,
+                });
+              });
+              await _saveTimeline();
+              Navigator.pop(context);
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: AppColors.inputBorder),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: AppColors.borderLight),
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => Navigator.of(context).pop(), // Goes back to Dashboard
+        ),
+        title: const Text(
+          'Project Timeline',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.projectName,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: widget.tags.map((tag) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDCF7E4),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Text(
+                    tag,
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 10,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+
+            TableCalendar(
+              focusedDay: _focusedDay,
+              firstDay: DateTime.utc(2020, 1, 1),
+              lastDay: DateTime.utc(2030, 12, 31),
+              calendarFormat: CalendarFormat.week,
+              startingDayOfWeek: StartingDayOfWeek.monday,
+              availableGestures: AvailableGestures.horizontalSwipe,
+              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay = focusedDay;
+                });
+              },
+              headerStyle: const HeaderStyle(
+                   formatButtonVisible: false,
+                titleCentered: true,
+                titleTextStyle: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              calendarStyle: const CalendarStyle(
+                todayDecoration: BoxDecoration(
+                  color: AppColors.accent,
+                  shape: BoxShape.circle,
+                ),
+                todayTextStyle: TextStyle(
+                  color: Colors.black,
+                ),
+                selectedDecoration: BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                defaultTextStyle: TextStyle(color: AppColors.textPrimary),
+                weekendTextStyle: TextStyle(color: AppColors.textPrimary),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            Expanded(
+              child: _timeline.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No timeline events added yet.',
+                        style: TextStyle(color: AppColors.textSecondary),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: _timeline.length,
+                      itemBuilder: (context, index) {
+                        final item = _timeline[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: const BorderSide(color: AppColors.borderLight),
+                          ),
+                          child: ListTile(
+                            title: Text(
+                              item['event']!,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item['date']!,
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                                if (item['description']!.isNotEmpty)
+                                  Text(
+                                    item['description']!,
+                                    style: const TextStyle(
+                                        color: AppColors.textSecondary),
+                                  ),
+                                if (item['location']!.isNotEmpty)
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.location_on,
+                                          size: 16,
+                                          color: AppColors.iconSecondary),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        item['location']!,
+                                        style: const TextStyle(
+                                            color: AppColors.textSecondary),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+
+            // const SizedBox(height: 16),
+
+            // SizedBox(
+            //   width: double.infinity,
+            //   height: 56,
+            //   child: ElevatedButton.icon(
+            //     onPressed: _addEventDialog,
+            //     style: ElevatedButton.styleFrom(
+            //       backgroundColor: AppColors.buttonPrimary,
+            //       foregroundColor: AppColors.buttonText,
+            //       shape: RoundedRectangleBorder(
+            //         borderRadius: BorderRadius.circular(12),
+            //       ),
+            //     ),
+            //     icon: const Icon(Icons.add, size: 24),
+            //     label: const Text(
+            //       'Add to Timeline',
+            //       style: TextStyle(
+            //         fontSize: 16,
+            //         fontWeight: FontWeight.w600,
+            //       ),
+            //     ),
+            //   ),
+            // ),
+            const SizedBox(height: 16),
+
+            // 1. Add Event Button (Secondary Action)
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: OutlinedButton.icon(
+                onPressed: _addEventDialog,
+                icon: const Icon(Icons.add, color: AppColors.primary),
+                label: const Text("Add to Timeline"),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.primary),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // 2. Done Button (Primary Action - Returns to Dashboard)
+            SubmitButton(
+              label: "Done",
+              isLoading: _isLoading, // Ensure you have this bool in your state
+              backgroundColor: AppColors.primary,
+              onPressed: () async {
+                setState(() => _isLoading = true);
+                
+                // Save any pending changes to Supabase
+                await _saveTimeline(); 
+
+                if (!mounted) return;
+                setState(() => _isLoading = false);
+                
+                // Return to the Project Dashboard
+                Navigator.of(context).pop(); 
+              },
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
