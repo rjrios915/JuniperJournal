@@ -142,7 +142,8 @@ flutter pub get
      timeline JSONB,
      materials_cost JSONB,
      metrics JSONB,
-     solution TEXT
+     solution TEXT,
+     journal_log TEXT,
    );
 
    -- Enable Row Level Security
