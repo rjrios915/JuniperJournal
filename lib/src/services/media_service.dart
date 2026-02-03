@@ -1,5 +1,5 @@
 import 'package:image_picker/image_picker.dart';
-import '../../backend/storage/storage_service.dart';
+import '../backend/storage/storage_service.dart';
 
 class MediaService {
   final ImagePicker _picker = ImagePicker();
@@ -20,6 +20,7 @@ class MediaService {
       // Upload to Supabase Storage
       return await _storage.uploadImage(
         image,
+        bucketName: 'images',
         folder: 'journal-log',
       );
     } catch (e) {

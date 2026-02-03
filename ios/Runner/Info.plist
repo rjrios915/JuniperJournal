@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>We use the camera to let you take photos and attach them to your journal entries.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We use the photo library to let you choose photos and attach them to your journal entries.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+<string>We save images to your photo library when you choose to export or download media.</string>
 </dict>
 </plist>

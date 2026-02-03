@@ -8,7 +8,7 @@ class StorageService {
   final _client = SupabaseDatabase.instance.client;
 
   /// The name of the storage bucket for learning module images
-  static const String bucketName = 'learning-module-images';
+  // static const String bucketName = 'learning-module-images';
 
   /// Uploads an image file to Supabase Storage and returns the public URL
   ///
@@ -16,7 +16,7 @@ class StorageService {
   /// [folder] - Optional folder path within the bucket (e.g., 'concept-exploration')
   ///
   /// Returns the public URL of the uploaded image, or null if upload fails
-  Future<String?> uploadImage(XFile imageFile, {String folder = ''}) async {
+  Future<String?> uploadImage(XFile imageFile, {String bucketName = "", String folder = ''}) async {
     try {
       // Generate a unique filename using timestamp and original filename
       final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -59,7 +59,7 @@ class StorageService {
   /// [imageUrl] - The public URL of the image to delete
   ///
   /// Returns true if deletion was successful, false otherwise
-  Future<bool> deleteImage(String imageUrl) async {
+  Future<bool> deleteImage(String imageUrl, {String bucketName = ""}) async {
     try {
       // Extract the file path from the public URL
       final uri = Uri.parse(imageUrl);

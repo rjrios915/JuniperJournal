@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fleather/fleather.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:juniper_journal/src/services/media_service.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'dart:convert';
 import 'dart:math' as math;
@@ -10,17 +11,7 @@ import '../../../backend/db/repositories/projects_repo.dart';
 import 'package:juniper_journal/src/features/project/project.dart';
 import 'package:juniper_journal/src/shared/widgets/widgets.dart';
 import 'package:juniper_journal/src/shared/styling/theme.dart';
-
-/// Custom embed for math equations
-// class MathEmbed extends BlockEmbed {
-//   MathEmbed(String latex) : super('math:$latex');
-
-//   static MathEmbed fromJson(String data) {
-//     return MathEmbed(data);
-//   }
-
-//   String get latex => type.substring(5); // Remove 'math:' prefix
-// }
+import 'package:juniper_journal/src/features/project/cubit/journal_log_cubit.dart';
 
 class JournalLogScreen extends StatefulWidget {
   final String projectId;
@@ -43,8 +34,33 @@ class _JournalLogScreenState extends State<JournalLogScreen> {
 
   FleatherController? _controller;
   final FocusNode _focusNode = FocusNode();
-  final ImagePicker _imagePicker = ImagePicker();
-  final StorageService _storageService = StorageService();
+  final MediaService _mediaService = MediaService();
+
+  Future<void> _handleImageAddition(ImageSource source) async {
+    final String? imageUrl = await _mediaService.pickAndUploadImage(source);
+
+    if (!mounted) return;
+
+    if (imageUrl == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to upload image'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    _insertImageIntoDocument(imageUrl);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Image added successfully!'),
+        backgroundColor: AppColors.primary,
+      ),
+    );
+  }
+
   final ProjectsRepo _projectsRepo = ProjectsRepo();
   bool _isLoading = true;
   bool _isHeaderCollapsed = false;
@@ -121,14 +137,14 @@ class _JournalLogScreenState extends State<JournalLogScreen> {
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(context);
-              _pickAndUploadImage(ImageSource.camera);
+             _handleImageAddition(ImageSource.camera);
             },
             child: const Text('Take Photo'),
           ),
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(context);
-              _pickAndUploadImage(ImageSource.gallery);
+              _handleImageAddition(ImageSource.gallery);
             },
             child: const Text('Choose from Gallery'),
           ),
@@ -140,75 +156,6 @@ class _JournalLogScreenState extends State<JournalLogScreen> {
         ),
       ),
     );
-  }
-
-  /// Picks an image from the specified source, uploads it to Supabase, and inserts it into the document
-  Future<void> _pickAndUploadImage(ImageSource source) async {
-    try {
-      // Pick the image
-      final XFile? image = await _imagePicker.pickImage(
-        source: source,
-        maxWidth: 1920,
-        maxHeight: 1920,
-        imageQuality: 85,
-      );
-
-      if (image == null) return;
-
-      // Show loading indicator
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Uploading image...'),
-            duration: Duration(seconds: 30),
-          ),
-        );
-      }
-
-      // Upload to Supabase Storage
-      final imageUrl = await _storageService.uploadImage(
-        image,
-        folder: 'journal-log',
-      );
-
-      if (imageUrl == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to upload image'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
-        return;
-      }
-
-      // Insert image into Fleather document
-      _insertImageIntoDocument(imageUrl);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Image added successfully!'),
-            backgroundColor: AppColors.primary,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('Error picking/uploading image: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to add image'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
   }
 
   /// Inserts an image embed into the Fleather document at the current cursor position
