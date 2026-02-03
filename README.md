@@ -257,31 +257,66 @@ The app should now launch! You'll see:
 ## 🏗️ Project Structure
 
 ```
-lib/
-├── main.dart                          # App entry point
-├── src/
-│   ├── backend/
-│   │   ├── auth/
-│   │   │   └── auth_service.dart      # Authentication logic
-│   │   ├── db/
-│   │   │   ├── supabase_database.dart # Supabase client
-│   │   │   └── repositories/          # Data access layer
-│   │   └── storage/
-│   │       └── storage_service.dart   # Image uploads
-│   ├── frontend/
-│   │   ├── home_page/
-│   │   │   ├── landing.dart           # Landing screen
-│   │   │   ├── login.dart             # Login screen
-│   │   │   ├── signup.dart            # Signup screen
-│   │   │   └── home.dart              # Main home screen
-│   │   ├── learning_module/           # Learning module screens
-│   │   └── submission_template/       # Project submission screens
-│   ├── styling/
-│   │   └── app_colors.dart            # App color palette
-│   └── widgets/
-│       └── toolbar.dart               # Shared widgets
+lib
+├── main.dart
+└── src
+    ├── backend
+    │   ├── auth
+    │   │   └── auth_service.dart
+    │   ├── db
+    │   │   ├── repositories
+    │   │   │   ├── learning_module_repo.dart
+    │   │   │   └── projects_repo.dart
+    │   │   └── supabase_database.dart
+    │   ├── debug
+    │   │   └── supabase_test_screen.dart
+    │   └── storage
+    │       └── storage_service.dart
+    ├── features
+    │   ├── home_page
+    │   │   ├── home_page.dart
+    │   │   └── pages
+    │   │       ├── auth_ui.dart
+    │   │       ├── home.dart
+    │   │       ├── landing.dart
+    │   │       ├── login.dart
+    │   │       └── signup.dart
+    │   ├── learning_module
+    │   │   ├── learning_module.dart
+    │   │   └── pages
+    │   │       ├── 3d_learning.dart
+    │   │       ├── activity.dart
+    │   │       ├── anchoring_phenomenon.dart
+    │   │       ├── assessment.dart
+    │   │       ├── call_to_action.dart
+    │   │       ├── concept_exploration.dart
+    │   │       ├── create_lm_template.dart
+    │   │       ├── learning_objective.dart
+    │   │       └── summary.dart
+    │   └── project
+    │       ├── cubit
+    │       ├── pages
+    │       │   ├── create_project.dart
+    │       │   ├── define_problem_statement.dart
+    │       │   ├── journal_log.dart
+    │       │   ├── materials_cost.dart
+    │       │   ├── metrics.dart
+    │       │   ├── project_dashboard.dart
+    │       │   ├── solution.dart
+    │       │   └── submissions_timeline.dart
+    │       └── project.dart
+    ├── services
+    │   └── media_service.dart
+    └── shared
+        ├── styling
+        │   ├── app_colors.dart
+        │   └── theme.dart
+        └── widgets
+            ├── math_embed.dart
+            ├── submit_button.dart
+            ├── toolbar.dart
+            └── widgets.dart
 ```
-
 ---
 
 ## 🧪 Testing
